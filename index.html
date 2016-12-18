@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChessGame</title>
+        <!-- font-size:0px removes spaces between each tile -->
+        <style>
+            .chessboard-tile { display: inline-block; background-color: #022640; 
+                               width: 50px; height: 50px; padding: 0px; font-size:10px; }
+            .chessboard-row { font-size:0px; }
+            .chessboard-row:nth-child(odd) .chessboard-tile:nth-child(odd) { background-color: #0673BF; }
+            .chessboard-row:nth-child(even) .chessboard-tile:nth-child(even) { background-color: #0673BF; }
+            
+        </style>
+    </head>
+    <body>
+        <img src="knight.svg" onerror="this.onerror=null; this.src='knight.png'" width="50px" height="50px">
+        <div>Icons made by <a href="http://www.flaticon.com/authors/madebyoliver" title="Madebyoliver">Madebyoliver</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+        <div id="chessboard">
+            <div id="row_1" class="chessboard-row">
+                <span id="a1" class="chessboard-tile"></span>
+                <span id="b1" class="chessboard-tile"></span>
+                <span id="c1" class="chessboard-tile"></span>
+                <span id="d1" class="chessboard-tile"></span>
+                <span id="e1" class="chessboard-tile"></span>
+                <span id="f1" class="chessboard-tile"></span>
+                <span id="g1" class="chessboard-tile"></span>
+                <span id="h1" class="chessboard-tile"></span>
+            </div> <!-- END row_1 -->
+            <div id="row_2" class="chessboard-row">
+                <span id="a2" class="chessboard-tile"></span>
+                <span id="b2" class="chessboard-tile"></span>
+                <span id="c2" class="chessboard-tile"></span>
+                <span id="d2" class="chessboard-tile"></span>
+                <span id="e2" class="chessboard-tile"></span>
+                <span id="f2" class="chessboard-tile"></span>
+                <span id="g2" class="chessboard-tile"></span>
+                <span id="h2" class="chessboard-tile"></span>
+            </div> <!-- END row_2 -->
+            <div id="row_3" class="chessboard-row">
+                <span id="a3" class="chessboard-tile"></span>
+                <span id="b3" class="chessboard-tile"></span>
+                <span id="c3" class="chessboard-tile"></span>
+                <span id="d3" class="chessboard-tile"></span>
+                <span id="e3" class="chessboard-tile"></span>
+                <span id="f3" class="chessboard-tile"></span>
+                <span id="g3" class="chessboard-tile"></span>
+                <span id="h3" class="chessboard-tile"></span>
+            </div> <!-- END row_3 -->
+            <div id="row_4" class="chessboard-row">
+                <span id="a4" class="chessboard-tile"></span>
+                <span id="b4" class="chessboard-tile"></span>
+                <span id="c4" class="chessboard-tile"></span>
+                <span id="d4" class="chessboard-tile"></span>
+                <span id="e4" class="chessboard-tile"></span>
+                <span id="f4" class="chessboard-tile"></span>
+                <span id="g4" class="chessboard-tile"></span>
+                <span id="h4" class="chessboard-tile"></span>
+            </div> <!-- END row_4 -->
+            <div id="row_5" class="chessboard-row">
+                <span id="a5" class="chessboard-tile"></span>
+                <span id="b5" class="chessboard-tile"></span>
+                <span id="c5" class="chessboard-tile"></span>
+                <span id="d5" class="chessboard-tile"></span>
+                <span id="e5" class="chessboard-tile"></span>
+                <span id="f5" class="chessboard-tile"></span>
+                <span id="g5" class="chessboard-tile"></span>
+                <span id="h5" class="chessboard-tile"></span>
+            </div> <!-- END row_5 -->
+            <div id="row_6" class="chessboard-row">
+                <span id="a6" class="chessboard-tile"></span>
+                <span id="b6" class="chessboard-tile"></span>
+                <span id="c6" class="chessboard-tile"></span>
+                <span id="d6" class="chessboard-tile"></span>
+                <span id="e6" class="chessboard-tile"></span>
+                <span id="f6" class="chessboard-tile"></span>
+                <span id="g6" class="chessboard-tile"></span>
+                <span id="h6" class="chessboard-tile"></span>
+            </div> <!-- END row_6 -->
+            <div id="row_7" class="chessboard-row">
+                <span id="a7" class="chessboard-tile"></span>
+                <span id="b7" class="chessboard-tile"></span>
+                <span id="c7" class="chessboard-tile"></span>
+                <span id="d7" class="chessboard-tile"></span>
+                <span id="e7" class="chessboard-tile"></span>
+                <span id="f7" class="chessboard-tile"></span>
+                <span id="g7" class="chessboard-tile"></span>
+                <span id="h7" class="chessboard-tile"></span>
+            </div> <!-- END row_7 -->
+            <div id="row_8" class="chessboard-row">
+                <span id="a8" class="chessboard-tile"></span>
+                <span id="b8" class="chessboard-tile"></span>
+                <span id="c8" class="chessboard-tile"></span>
+                <span id="d8" class="chessboard-tile"></span>
+                <span id="e8" class="chessboard-tile"></span>
+                <span id="f8" class="chessboard-tile"></span>
+                <span id="g8" class="chessboard-tile"></span>
+                <span id="h8" class="chessboard-tile"></span>
+            </div> <!-- END row_8 -->
+        </div> <!-- END chessboard -->
+    </body>
+</html>
