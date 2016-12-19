@@ -66,6 +66,38 @@ function Rook( color ) {
     this.name = Images.rook;
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    this.validateMove = function( oldCoord, newCoord ) {
+        var deltaX = getDeltaX( oldCoord, newCoord );
+        var deltaY = getDeltaY( oldCoord, newCoord );
+        if ( deltaX != 0 && deltaY != 0 ) { return false; }
+        if ( deltaX == 0 ) {
+            var d = deltaY;
+            var movementX = 0;
+            if (oldCoord[1] < newCoord[1]) {
+                var movementY = 1;
+            } else {
+                var movementY = -1;
+            }
+        }
+        else if ( deltaY == 0 ) {
+            var d = deltaX;
+            var movementY = 0;
+            if (oldCoord[0] < newCoord[0]) {
+                var movementX = 1;
+            } else {
+                var movementX = -1;
+            }
+        }
+        for (var i = 1; i < d; i++ ) {
+            var currentCoord = [oldCoord[0] + (i * movementX), 
+                                oldCoord[1] + (i * movementY)];
+            if (ChessBoard.getObjectAtCoord( currentCoord ) != null) { return false; }
+        }
+        var piece = ChessBoard.getObjectAtCoord( newCoord );
+        if (piece == null) { return true; }
+        if (piece.color == this.color) { return false; }
+        return true;
+    };
 }
 
 function Knight( color ) {
@@ -121,13 +153,35 @@ function Bishop( color ) {
 function King( color ) {
     this.name = Images.king;
     this.color = color;
+    this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    this.validateMove = function( oldCoord, newCoord ) {
+        var deltaX = getDeltaX( oldCoord, newCoord );
+        var deltaY = getDeltaY( oldCoord, newCoord );
+        if (deltaX > 1 || deltaY > 1) {
+            return false;
+        }
+        var piece = ChessBoard.getObjectAtCoord( newCoord );
+        if (piece == null) {
+            this.hasMovedYet = true;
+            return true; 
+        }
+        if (piece.color == this.color) { return false; }
+        this.hasMovedYet = true;
+        return true;
+    };
 }
 
 function Queen( color ) {
     this.name = Images.queen;
     this.color = color;
+    this.rook = new Rook( color );
+    this.bishop = new Bishop( color );
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    this.validateMove = function( oldCoord, newCoord ) {
+        return this.rook.validateMove( oldCoord, newCoord ) || 
+               this.bishop.validateMove( oldCoord, newCoord );
+    }
 }
 
 var ChessBoard = {
@@ -186,8 +240,10 @@ var ChessBoard = {
             this.board[toCoord[1]][toCoord[0]] = this.board[fromCoord[1]][fromCoord[0]];
             this.board[fromCoord[1]][fromCoord[0]] = null;
             this.drawBoard();
+            if (fromPiece != null) {return true}
         }
-    },
+        return false;
+    }, 
     
     getObjectAtCoord: function( coords ) {
         return this.board[coords[1]][coords[0]];
