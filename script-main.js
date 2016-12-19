@@ -285,23 +285,40 @@ var ChessBoard = {
         if ( fromPiece.validateMove( fromCoord, toCoord ) ) {
             this.board[toCoord[1]][toCoord[0]] = this.board[fromCoord[1]][fromCoord[0]];
             this.board[fromCoord[1]][fromCoord[0]] = null;
-            this.drawBoard();
             if (this.lastMove != null) {
-                var thisMove = fromPiece.sName + toTilename;
+                var thisMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
                 writeMove( this.lastMove, thisMove );
                 this.lastMove = null;
             } else {
-                this.lastMove = fromPiece.sName + toTilename;
+                this.lastMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
             }
             if( clearEnPassant ) {
                 this.enPassantCoord = null;
                 this.enPassantPiece = null;
             }
+            this.drawBoard();
             this.switchPlayer();
             if (fromPiece != null) {return true}
         }
         return false;
     }, 
+    
+    checkPromotion: function( fromPiece, toCoord ) {
+        if (fromPiece instanceof Pawn) {
+            if (fromPiece.color == this.white) {
+                if (toCoord[1] == 0) {
+                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.white );
+                    return "Q";
+                }
+            } else {
+                if (toCoord[1] == 7) {
+                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.black );
+                    return "Q";
+                }
+            }
+        }
+        return "";
+    },
     
     enPassantRemove: function() {
         for ( var i = 0; i < 8; i++ ) {
