@@ -44,6 +44,13 @@ function Pawn( color ) {
             if (oldMovedYet) { return false; }
             else if (deltaX != 0) { return false; }
             else if (ChessBoard.getObjectAtCoord(newCoord) != null) { return false; }
+            if (this.color == ChessBoard.white) {
+                var checkBetween = [newCoord[0], newCoord[1]+1];
+                if (ChessBoard.getObjectAtCoord( checkBetween ) != null) { return false; }
+            } else {
+                var checkBetween = [newCoord[0], newCoord[1]-1];
+                if (ChessBoard.getObjectAtCoord( checkBetween ) != null) { return false; }
+            }
             this.movedYet = true;
             if (this.color == Images.white) {
                 ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]+1];
@@ -82,6 +89,7 @@ function Rook( color ) {
     this.name = Images.rook;
     this.sName = "R";
     this.color = color;
+    this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
         var deltaX = getDeltaX( oldCoord, newCoord );
@@ -111,8 +119,12 @@ function Rook( color ) {
             if (ChessBoard.getObjectAtCoord( currentCoord ) != null) { return false; }
         }
         var piece = ChessBoard.getObjectAtCoord( newCoord );
-        if (piece == null) { return true; }
+        if (piece == null) { 
+            this.hasMovedYet = true;
+            return true; 
+        }
         if (piece.color == this.color) { return false; }
+        this.hasMovedYet = true;
         return true;
     };
 }
@@ -178,6 +190,10 @@ function King( color ) {
     this.validateMove = function( oldCoord, newCoord ) {
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
+        if ( !this.hasMovedYet && deltaX == 2 && deltaY == 0 ) {
+            console.log( "castling" );
+            return ChessBoard.castle( this.color, newCoord );
+        }
         if (deltaX > 1 || deltaY > 1) {
             return false;
         }
@@ -308,6 +324,42 @@ var ChessBoard = {
         } else {
             this.player = this.white;
             elem.innerHTML = "White's move.";
+        }
+    },
+    
+    castle: function( color, newPosition ) {
+        var shortCastle = newPosition[0] < 3;
+        var currentCoord = [3, 0];
+        if (color == this.white) {
+            currentCoord = [3, 7]
+        }
+        var x = currentCoord[0];
+        var y = currentCoord[1];
+        if (shortCastle) {
+            if (this.board[y][x-1] != null) { return false; }
+            if (this.board[y][x-2] != null) { return false; }
+            var rook = this.board[y][x-3];
+            if (rook == null) { return false; }
+            if (rook.hasMovedYet) { return false; }
+            this.board[y][x-3] = null;
+            this.board[y][x-1] = rook;
+            rook.hasMovedYet = true;
+            var king = this.board[y][x];
+            king.hasMovedYet = true;
+            return true;
+        } else {
+            if (this.board[y][x+1] != null) { return false; }
+            if (this.board[y][x+2] != null) { return false; }
+            if (this.board[y][x+3] != null) { return false; }
+            var rook = this.board[y][x+4];
+            if (rook == null) { return false; }
+            if (rook.hasMovedYet) { return false; }
+            this.board[y][x+1] = rook;
+            this.board[y][x+4] = null;
+            rook.hasMovedYet = true;
+            var king = this.board[y][x];
+            king.hasMovedYet = true;
+            return true;
         }
     },
     
