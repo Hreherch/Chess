@@ -221,15 +221,15 @@ function Queen( color ) {
     }
 }
 
-var ChessBoard = {
-    board: [],
-    lastMove: null,
-    white: Images.white,
-    black: Images.black,
-    player: Images.white,
-    enPassantPiece: null,
-    enPassantCoord: null,
-    initBoard: function() {
+function Board() {
+    this.board = [];
+    this.lastMove = null;
+    this.white = Images.white;
+    this.black = Images.black;
+    this.player = Images.white;
+    this.enPassantPiece = null;
+    this.enPassantCoord = null;
+    this.initBoard = function() {
         this.board = [];
         this.board.push([new Rook( Images.black ),   new Knight( Images.black ), 
                          new Bishop( Images.black ), new King( Images.black ), 
@@ -255,9 +255,9 @@ var ChessBoard = {
                          new Bishop( Images.white ), new King( Images.white ), 
                          new Queen( Images.white ), new Bishop( Images.white ), 
                          new Knight( Images.white ), new Rook( Images.white )  ]);
-    },
+    };
     
-    drawBoard: function() {
+    this.drawBoard = function() {
         for ( var i = 0; i < 8; i++ ) {
             for ( var j = 0; j < 8; j++ ) {
                 var piece = this.board[i][j];
@@ -269,9 +269,9 @@ var ChessBoard = {
                 }
             }
         }
-    },
+    };
     
-    movePiece: function( fromTilename, toTilename ) {
+    this.movePiece = function( fromTilename, toTilename ) {
         var clearEnPassant = false;
         if (this.enPassantPiece != null) { clearEnPassant = true; }
         console.log( fromTilename, toTilename );
@@ -301,9 +301,9 @@ var ChessBoard = {
             if (fromPiece != null) {return true}
         }
         return false;
-    }, 
+    };
     
-    checkPromotion: function( fromPiece, toCoord ) {
+    this.checkPromotion = function( fromPiece, toCoord ) {
         if (fromPiece instanceof Pawn) {
             if (fromPiece.color == this.white) {
                 if (toCoord[1] == 0) {
@@ -318,9 +318,9 @@ var ChessBoard = {
             }
         }
         return "";
-    },
+    };
     
-    enPassantRemove: function() {
+    this.enPassantRemove = function() {
         for ( var i = 0; i < 8; i++ ) {
             for ( var j = 0; j < 8; j++ ) {
                 var piece = this.board[i][j];
@@ -331,9 +331,9 @@ var ChessBoard = {
                 }
             }
         }
-    },
+    };
     
-    switchPlayer: function() {
+    this.switchPlayer = function() {
         var elem = document.getElementById( "move-indicator" );
         if (this.player == this.white) {
             this.player = this.black;
@@ -342,9 +342,9 @@ var ChessBoard = {
             this.player = this.white;
             elem.innerHTML = "White's move.";
         }
-    },
+    };
     
-    castle: function( color, newPosition ) {
+    this.castle = function( color, newPosition ) {
         var shortCastle = newPosition[0] < 3;
         var currentCoord = [3, 0];
         if (color == this.white) {
@@ -378,12 +378,14 @@ var ChessBoard = {
             king.hasMovedYet = true;
             return true;
         }
-    },
+    };
     
-    getObjectAtCoord: function( coords ) {
+    this.getObjectAtCoord = function( coords ) {
         return this.board[coords[1]][coords[0]];
-    },
+    };
 }
+
+var ChessBoard = new Board();
 
 var ChessBoardSelector = {
     lastTileSelected: null,
