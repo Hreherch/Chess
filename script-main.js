@@ -45,6 +45,12 @@ function Pawn( color ) {
             else if (deltaX != 0) { return false; }
             else if (ChessBoard.getObjectAtCoord(newCoord) != null) { return false; }
             this.movedYet = true;
+            if (this.color == Images.white) {
+                ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]+1];
+            } else {
+                ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]-1];
+            }
+            ChessBoard.enPassantPiece = this;
             return true;
         }
         // can only move one space forward thereafter. 
@@ -56,7 +62,16 @@ function Pawn( color ) {
             return true;
         }
         if (deltaX != 1) { return false; }
-        if (piece == null) { return false; }
+        if (piece == null) { 
+            console.log( "enPassant", newCoord, ChessBoard.enPassantCoord );
+            if (ChessBoard.enPassantPiece == null) { return false; }
+            else if (newCoord[0] == ChessBoard.enPassantCoord[0]
+                     && newCoord[1] == ChessBoard.enPassantCoord[1]) {
+                ChessBoard.enPassantRemove();
+                return true;
+            }
+            return false;
+        }
         if (piece.color == this.color) { return false; }
         this.movedYet = true;
         return true;
@@ -193,6 +208,11 @@ function Queen( color ) {
 var ChessBoard = {
     board: [],
     lastMove: null,
+    white: Images.white,
+    black: Images.black,
+    player: Images.white,
+    enPassantPiece: null,
+    enPassantCoord: null,
     initBoard: function() {
         this.board = [];
         this.board.push([new Rook( Images.black ),   new Knight( Images.black ), 
@@ -236,9 +256,12 @@ var ChessBoard = {
     },
     
     movePiece: function( fromTilename, toTilename ) {
+        var clearEnPassant = false;
+        if (this.enPassantPiece != null) { clearEnPassant = true; }
         console.log( fromTilename, toTilename );
         var fromCoord = getTileCoord( fromTilename );
         var fromPiece = this.getObjectAtCoord( fromCoord );
+        if (fromPiece.color != this.player) { return false; }
         var toCoord = getTileCoord( toTilename );
         var toPiece = this.getObjectAtCoord( toCoord );
         console.log( fromCoord, toCoord );
@@ -254,10 +277,39 @@ var ChessBoard = {
             } else {
                 this.lastMove = fromPiece.sName + toTilename;
             }
+            if( clearEnPassant ) {
+                this.enPassantCoord = null;
+                this.enPassantPiece = null;
+            }
+            this.switchPlayer();
             if (fromPiece != null) {return true}
         }
         return false;
     }, 
+    
+    enPassantRemove: function() {
+        for ( var i = 0; i < 8; i++ ) {
+            for ( var j = 0; j < 8; j++ ) {
+                var piece = this.board[i][j];
+                if (piece == this.enPassantPiece) {
+                    this.board[i][j] = null;
+                    this.drawBoard();
+                    return;
+                }
+            }
+        }
+    },
+    
+    switchPlayer: function() {
+        var elem = document.getElementById( "move-indicator" );
+        if (this.player == this.white) {
+            this.player = this.black;
+            elem.innerHTML = "Black's move.";
+        } else {
+            this.player = this.white;
+            elem.innerHTML = "White's move.";
+        }
+    },
     
     getObjectAtCoord: function( coords ) {
         return this.board[coords[1]][coords[0]];
