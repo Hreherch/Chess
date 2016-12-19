@@ -24,6 +24,7 @@ var getDeltaY = function( oldCoord, newCoord ) {
 
 function Pawn( color ) {
     this.name = Images.pawn;
+    this.sName = "";
     this.color = color;
     this.movedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
@@ -64,6 +65,7 @@ function Pawn( color ) {
 
 function Rook( color ) {
     this.name = Images.rook;
+    this.sName = "R";
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
@@ -102,6 +104,7 @@ function Rook( color ) {
 
 function Knight( color ) {
     this.name = Images.knight;
+    this.sName = "N";
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
@@ -121,6 +124,7 @@ function Knight( color ) {
 
 function Bishop( color ) {
     this.name = Images.bishop;
+    this.sName = "B";
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
@@ -152,6 +156,7 @@ function Bishop( color ) {
 
 function King( color ) {
     this.name = Images.king;
+    this.sName = "K";
     this.color = color;
     this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
@@ -174,6 +179,7 @@ function King( color ) {
 
 function Queen( color ) {
     this.name = Images.queen;
+    this.sName = "Q";
     this.color = color;
     this.rook = new Rook( color );
     this.bishop = new Bishop( color );
@@ -186,6 +192,7 @@ function Queen( color ) {
 
 var ChessBoard = {
     board: [],
+    lastMove: null,
     initBoard: function() {
         this.board = [];
         this.board.push([new Rook( Images.black ),   new Knight( Images.black ), 
@@ -240,6 +247,13 @@ var ChessBoard = {
             this.board[toCoord[1]][toCoord[0]] = this.board[fromCoord[1]][fromCoord[0]];
             this.board[fromCoord[1]][fromCoord[0]] = null;
             this.drawBoard();
+            if (this.lastMove != null) {
+                var thisMove = fromPiece.sName + toTilename;
+                writeMove( this.lastMove, thisMove );
+                this.lastMove = null;
+            } else {
+                this.lastMove = fromPiece.sName + toTilename;
+            }
             if (fromPiece != null) {return true}
         }
         return false;
@@ -318,6 +332,12 @@ var initBoard = function() {
             tile.setAttribute( 'onclick', 'clickedTile( "' + tilename + '" )' );
         }
     }
+}
+
+var writeMove = function( moveOne, moveTwo ) {
+    var div = document.getElementById("move-container");
+    div.innerHTML += "<p>" + moveOne + " " + moveTwo + "</p>";
+    div.scrollTop = div.scrollHeight;
 }
 
 document.addEventListener( 'DOMContentLoaded', initBoard, false );
