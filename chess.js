@@ -38,7 +38,6 @@ function Pawn( color ) {
         }
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
-        console.log( deltaX, deltaY );
         // can only move two spaces on initial move.
         if (deltaY == 2) {
             if (oldMovedYet) { return false; }
@@ -82,6 +81,20 @@ function Pawn( color ) {
         if (piece.color == this.color) { return false; }
         this.movedYet = true;
         return true;
+    };
+    this.getPossibleMoves = function( oldCoord ) {
+        var x = oldCoord[0];
+        var y = oldCoord[1];
+        var list = [];
+        if (this.validateMove(oldCoord, [x, y+1])) { 
+            list.push([x, y+1]); 
+            console.log( "validated: (", x, ",", y, ") => (", x, ",", y+1, ")" );
+            console.log( "encoded as", getTileName( [x, y] ), "=>", getTileName( [x, y+1] ) );
+        }
+        //if (this.validateMove(oldCoord, [x, y+2])) { list.push([x, y+2]); }
+        //if (this.validateMove(oldCoord, [x+1, y+1])) { list.push([x+1, y+1]); }
+        //if (this.validateMove(oldCoord, [x-1, y+1])) { list.push([x-1, y+1]); }
+        return list;
     };
 }
 
@@ -260,7 +273,7 @@ function Board() {
     this.drawBoard = function() {
         for ( var i = 0; i < 8; i++ ) {
             for ( var j = 0; j < 8; j++ ) {
-                var piece = this.board[i][j];
+                var piece = this.board[j][i];
                 var tilename = getTileName([i, j]);
                 if (piece == null) { 
                     removeTileImage( tilename ); 
@@ -277,6 +290,7 @@ function Board() {
         console.log( fromTilename, toTilename );
         var fromCoord = getTileCoord( fromTilename );
         var fromPiece = this.getObjectAtCoord( fromCoord );
+        if (fromPiece == null) { return false; }
         if (fromPiece.color != this.player) { return false; }
         var toCoord = getTileCoord( toTilename );
         var toPiece = this.getObjectAtCoord( toCoord );
@@ -338,6 +352,7 @@ function Board() {
         if (this.player == this.white) {
             this.player = this.black;
             elem.innerHTML = "Black's move.";
+            decide(this);
         } else {
             this.player = this.white;
             elem.innerHTML = "White's move.";
@@ -383,13 +398,28 @@ function Board() {
     this.getObjectAtCoord = function( coords ) {
         return this.board[coords[1]][coords[0]];
     };
+    
+    this.getAllObjects = function( color ) {
+        var list = [];
+        for ( var i = 0; i < 8; i++ ) {
+            for ( var j = 0; j < 8; j++ ) {
+                var piece = this.getObjectAtCoord( [i, j] );
+                if (piece == null) { continue; }
+                if (piece.color == color) {
+                    list.push( [piece, [i, j]] );
+                }
+            }
+        }
+        console.log( list );
+        return list;
+    };
 }
 
 var ChessBoard = new Board();
 
 var ChessBoardSelector = {
     lastTileSelected: null,
-    lastTileSelected_value: null,
+    lastTileSelected_style: null,
 }
 
 var removeTileImage = function( tilename ) {
@@ -405,7 +435,7 @@ var getTileName = function( coords ) {
     letters = [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' ];
     row = coords[1];
     col = coords[0];
-    return letters[row] + (col + 1);
+    return letters[col] + (row + 1);
 }
 
 // returns [column, row]
@@ -425,22 +455,25 @@ var clickedTile = function( tilename ) {
     var lastTileName = ChessBoardSelector.lastTileSelected;
     if (lastTileName != null) { var lastTile = getTileElement(lastTileName); }
     if (lastTileName == tilename) {
-        lastTile.style = ChessBoardSelector.lastTileSelected_value;
+        lastTile.style = ChessBoardSelector.lastTileSelected_style;
         ChessBoardSelector.lastTileSelected = null;
-        ChessBoardSelector.lastTileSelected_value = null;
+        ChessBoardSelector.lastTileSelected_style = null;
         return;
     }
     if (lastTile != null) {
         ChessBoard.movePiece( lastTileName, tilename );
-        lastTile.style = ChessBoardSelector.lastTileSelected_value;
+        lastTile.style = ChessBoardSelector.lastTileSelected_style;
         ChessBoardSelector.lastTileSelected = null;
-        ChessBoardSelector.lastTileSelected_value = null;
+        ChessBoardSelector.lastTileSelected_style = null;
         return;
     }
-    // 
+    var coords = getTileCoord( tilename );
+    var piece = ChessBoard.getObjectAtCoord( coords );
+    if (piece == null) { return; }
+    if (ChessBoard.player != piece.color) { return; }
     var tile = getTileElement( tilename );
     ChessBoardSelector.lastTileSelected = tilename;
-    ChessBoardSelector.lastTileSelected_value = tile.style;
+    ChessBoardSelector.lastTileSelected_style = tile.style;
     tile.style.backgroundColor = "#1477CC";
     
 }
