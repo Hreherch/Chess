@@ -22,14 +22,34 @@ var getDeltaY = function( oldCoord, newCoord ) {
     return Math.abs( oldCoord[1] - newCoord[1] )
 }
 
+var clonePiece = function( piece ) {
+    if (piece == null) {
+        return null;
+    } else if (piece.sName == "") {
+        var newPiece = new Pawn( piece.color );
+    } else if (piece.sName == "R") {
+        var newPiece = new Rook( piece.color );
+    } else if (piece.sName == "K") {
+        var newPiece = new King( piece.color );
+    } else if (piece.sName == "Q") {
+        var newPiece = new Queen( piece.color ); 
+    } else if (piece.sName == "N") {
+        var newPiece = new Knight( piece.color );
+    } else if (piece.sName == "B") {
+        var newPiece = new Bishop( piece.color );
+    }
+     newPiece.hasMovedYet = piece.hasMovedYet;
+     return newPiece;
+}
+
 function Pawn( color ) {
     this.name = Images.pawn;
+    this.value = 1;
     this.sName = "";
     this.color = color;
-    this.movedYet = false;
+    this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove =function( oldCoord, newCoord ) {
-        var oldMovedYet = this.movedYet;
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         // white and black pawns can only move in a certain direction
@@ -42,7 +62,7 @@ function Pawn( color ) {
         var deltaY = getDeltaY( oldCoord, newCoord );
         // can only move two spaces on initial move.
         if (deltaY == 2) {
-            if (oldMovedYet) { return false; }
+            if (this.hasMovedYet) { return false; }
             else if (deltaX != 0) { return false; }
             else if (ChessBoard.getObjectAtCoord(newCoord) != null) { return false; }
             if (this.color == ChessBoard.white) {
@@ -52,7 +72,6 @@ function Pawn( color ) {
                 var checkBetween = [newCoord[0], newCoord[1]-1];
                 if (ChessBoard.getObjectAtCoord( checkBetween ) != null) { return false; }
             }
-            this.movedYet = true;
             if (this.color == Images.white) {
                 ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]+1];
             } else {
@@ -66,7 +85,6 @@ function Pawn( color ) {
         var piece = ChessBoard.getObjectAtCoord(newCoord);
         if (deltaX == 0) {
             if (piece != null) { return false; }
-            this.movedYet = true;
             return true;
         }
         if (deltaX != 1) { return false; }
@@ -81,28 +99,23 @@ function Pawn( color ) {
             return false;
         }
         if (piece.color == this.color) { return false; }
-        this.movedYet = true;
         return true;
     };
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
-        var oldMovedYet = this.movedYet;
         var list = [];
         if (this.validateMove(oldCoord, [x, y+1])) { list.push([x, y+1]); }
-        this.movedYet = oldMovedYet;
         if (this.validateMove(oldCoord, [x, y+2])) { list.push([x, y+2]); }
-        this.movedYet = oldMovedYet;
         if (this.validateMove(oldCoord, [x+1, y+1])) { list.push([x+1, y+1]); }
-        this.movedYet = oldMovedYet;
         if (this.validateMove(oldCoord, [x-1, y+1])) { list.push([x-1, y+1]); }
-        this.movedYet = oldMovedYet;
         return list;
     };
 }
 
 function Rook( color ) {
     this.name = Images.rook;
+    this.value = 5;
     this.sName = "R";
     this.color = color;
     this.hasMovedYet = false;
@@ -138,11 +151,9 @@ function Rook( color ) {
         }
         var piece = ChessBoard.getObjectAtCoord( newCoord );
         if (piece == null) { 
-            this.hasMovedYet = true;
             return true; 
         }
         if (piece.color == this.color) { return false; }
-        this.hasMovedYet = true;
         return true;
     };
     this.getPossibleMoves = function( oldCoord ) {
@@ -152,9 +163,7 @@ function Rook( color ) {
         var oldMovedYet = this.hasMovedYet;
         for (var i = 0; i < 8; i++) {
             if (this.validateMove(oldCoord, [x, i])) { list.push([x, i]); }
-            this.hasMovedYet = oldMovedYet;
             if (this.validateMove(oldCoord, [i, y])) { list.push([i, y]); }
-            this.hasMovedYet = oldMovedYet;
         }
         return list;
     };
@@ -162,8 +171,10 @@ function Rook( color ) {
 
 function Knight( color ) {
     this.name = Images.knight;
+    this.value = 3;
     this.sName = "N";
     this.color = color;
+    this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
@@ -200,8 +211,10 @@ function Knight( color ) {
 
 function Bishop( color ) {
     this.name = Images.bishop;
+    this.value = 3;
     this.sName = "B";
     this.color = color;
+    this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
@@ -247,6 +260,7 @@ function Bishop( color ) {
 
 function King( color ) {
     this.name = Images.king;
+    this.value = 200;
     this.sName = "K";
     this.color = color;
     this.hasMovedYet = false;
@@ -265,25 +279,21 @@ function King( color ) {
         }
         var piece = ChessBoard.getObjectAtCoord( newCoord );
         if (piece == null) {
-            this.hasMovedYet = true;
             return true; 
         }
         if (piece.color == this.color) { return false; }
-        this.hasMovedYet = true;
         return true;
     };
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
         var list = [];
-        var oldMovedYet = this.hasMovedYet;
         
         var xAr = [0, 0, 1, -1, -1, 1, -1, 1, 2, -2];
         var yAr = [1, -1, 0, 0, -1, 1, 1, -1, 0, 0];
         
         for (var i = 0; i < xAr.length; i++) {
             if (this.validateMove(oldCoord, [x+xAr[i], y+yAr[i]])) { list.push([x+xAr[i], y+yAr[i]]); }
-            this.hasMovedYet = oldMovedYet;
         }
         
         return list;
@@ -292,12 +302,18 @@ function King( color ) {
 
 function Queen( color ) {
     this.name = Images.queen;
+    this.value = 9;
     this.sName = "Q";
     this.color = color;
+    this.hasMovedYet = false;
     this.rook = new Rook( color );
     this.bishop = new Bishop( color );
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
+    if ( this.hasMovedYet && !(this.rook.hasMovedYet || this.bishop.hasMovedYet) ) {
+            this.rook.hasMovedYet = true;
+            this.bishop.hasMovedYet = true;
+        }
         return this.rook.validateMove( oldCoord, newCoord ) || 
                this.bishop.validateMove( oldCoord, newCoord );
     };
@@ -312,6 +328,7 @@ function Queen( color ) {
 
 function Board() {
     this.board = [];
+    this.drawing = false;
     this.lastMove = null;
     this.white = Images.white;
     this.black = Images.black;
@@ -347,6 +364,7 @@ function Board() {
     };
     
     this.drawBoard = function() {
+        if (!this.drawing) { return; }
         for ( var i = 0; i < 8; i++ ) {
             for ( var j = 0; j < 8; j++ ) {
                 var piece = this.board[j][i];
@@ -373,8 +391,18 @@ function Board() {
         console.log( fromCoord, toCoord );
         console.log( fromPiece, toPiece );
         if ( fromPiece.validateMove( fromCoord, toCoord ) ) {
+            writeMessage( "" );
+            var toCoordOldValue = this.board[toCoord[1]][toCoord[0]];
             this.board[toCoord[1]][toCoord[0]] = this.board[fromCoord[1]][fromCoord[0]];
             this.board[fromCoord[1]][fromCoord[0]] = null;
+            if (this.check( this.player )) {
+                this.board[fromCoord[1]][fromCoord[0]] = this.board[toCoord[1]][toCoord[0]];
+                this.board[toCoord[1]][toCoord[0]] = toCoordOldValue;
+                if (this.drawing) {
+                    writeMessage( "That would put you in check, Player." );
+                }
+                return false;
+            }
             if (this.lastMove != null) {
                 var thisMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
                 writeMove( this.lastMove, thisMove );
@@ -386,6 +414,7 @@ function Board() {
                 this.enPassantCoord = null;
                 this.enPassantPiece = null;
             }
+            this.board[toCoord[1]][toCoord[0]].hasMovedYet = true;
             this.drawBoard();
             this.switchPlayer();
             if (fromPiece != null) {return true}
@@ -431,7 +460,7 @@ function Board() {
             decide(this);
         } else {
             this.player = this.white;
-            elem.innerHTML = "White's move.";
+            if (this.drawing) { elem.innerHTML = "White's move."; }
         }
     };
     
@@ -489,9 +518,63 @@ function Board() {
         console.log( list );
         return list;
     };
+    
+    this.kingPosition = function( color ) {
+        for ( var i = 0; i < 8; i++ ) {
+            for ( var j = 0; j < 8; j++ ) {
+                var piece = this.getObjectAtCoord( [i, j] );
+                if (piece != null) {
+                    if (piece.color == color && piece.sName == 'K') {
+                        return [i, j];
+                    }
+                }
+            }
+        }
+    };
+    
+    this.check = function( color ) {
+        var kingPos = this.kingPosition( color );
+        if (color == this.white) {
+            var opposingPieces = this.getAllObjects( this.black );
+        } else {
+            var opposingPieces = this.getAllObjects( this.white );
+        }
+        for (var i = 0; i < opposingPieces.length; i++ ) {
+            if (opposingPieces[i][0].validateMove( opposingPieces[i][1], kingPos )) { return true; }
+        }
+        return false;
+    };
+    
+    this.clone = function() {
+        var clone = new Board();
+        clone.initBoard();
+        for ( var i = 0; i < 8; i++ ) {
+            for ( var j = 0; j < 8; j++ ) {
+                clone.board[i][j] = clonePiece(this.board[i][j]);
+            }
+        }
+        // TODO issues with En Passant?
+        clone.player = this.player;
+        return clone;
+    };
+    
+    this.getValue = function() {
+        var sum = 0;
+        for ( var i = 0; i < 8; i++ ) {
+            for ( var j = 0; j < 8; j++ ) {
+                var piece = this.getObjectAtCoord( [i, j] );
+                if (piece == null) { continue; }
+                if (piece.color == this.black) { var modifier = 1; }
+                else { var modifier = -1; }
+                sum += (piece.value * modifier);
+            }
+        }
+        return sum;
+    };
 }
 
 var ChessBoard = new Board();
+ChessBoard.drawing = true;
 
 var ChessBoardSelector = {
     lastTileSelected: null,
@@ -564,6 +647,11 @@ var initBoard = function() {
             tile.setAttribute( 'onclick', 'clickedTile( "' + tilename + '" )' );
         }
     }
+}
+
+var writeMessage = function( message ) {
+    var div = document.getElementById( "message-box" );
+    div.innerHTML = message;
 }
 
 var writeMove = function( moveOne, moveTwo ) {
