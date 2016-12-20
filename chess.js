@@ -30,6 +30,8 @@ function Pawn( color ) {
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove =function( oldCoord, newCoord ) {
         var oldMovedYet = this.movedYet;
+        if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
+        if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         // white and black pawns can only move in a certain direction
         if (oldCoord[1] < newCoord[1] && this.color == Images.white) { 
             return false;
@@ -85,15 +87,16 @@ function Pawn( color ) {
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
+        var oldMovedYet = this.movedYet;
         var list = [];
-        if (this.validateMove(oldCoord, [x, y+1])) { 
-            list.push([x, y+1]); 
-            console.log( "validated: (", x, ",", y, ") => (", x, ",", y+1, ")" );
-            console.log( "encoded as", getTileName( [x, y] ), "=>", getTileName( [x, y+1] ) );
-        }
-        //if (this.validateMove(oldCoord, [x, y+2])) { list.push([x, y+2]); }
-        //if (this.validateMove(oldCoord, [x+1, y+1])) { list.push([x+1, y+1]); }
-        //if (this.validateMove(oldCoord, [x-1, y+1])) { list.push([x-1, y+1]); }
+        if (this.validateMove(oldCoord, [x, y+1])) { list.push([x, y+1]); }
+        this.movedYet = oldMovedYet;
+        if (this.validateMove(oldCoord, [x, y+2])) { list.push([x, y+2]); }
+        this.movedYet = oldMovedYet;
+        if (this.validateMove(oldCoord, [x+1, y+1])) { list.push([x+1, y+1]); }
+        this.movedYet = oldMovedYet;
+        if (this.validateMove(oldCoord, [x-1, y+1])) { list.push([x-1, y+1]); }
+        this.movedYet = oldMovedYet;
         return list;
     };
 }
@@ -105,6 +108,8 @@ function Rook( color ) {
     this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
+        if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
+        if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( deltaX != 0 && deltaY != 0 ) { return false; }
@@ -140,6 +145,19 @@ function Rook( color ) {
         this.hasMovedYet = true;
         return true;
     };
+    this.getPossibleMoves = function( oldCoord ) {
+        var x = oldCoord[0];
+        var y = oldCoord[1];
+        var list = [];
+        var oldMovedYet = this.hasMovedYet;
+        for (var i = 0; i < 8; i++) {
+            if (this.validateMove(oldCoord, [x, i])) { list.push([x, i]); }
+            this.hasMovedYet = oldMovedYet;
+            if (this.validateMove(oldCoord, [i, y])) { list.push([i, y]); }
+            this.hasMovedYet = oldMovedYet;
+        }
+        return list;
+    };
 }
 
 function Knight( color ) {
@@ -148,6 +166,8 @@ function Knight( color ) {
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
+        if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
+        if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( (deltaX == 1 && deltaY == 2) || (deltaX == 2 && deltaY == 1) ) {
@@ -160,6 +180,22 @@ function Knight( color ) {
         }
         return false;
     };
+    this.getPossibleMoves = function( oldCoord ) {
+        var x = oldCoord[0];
+        var y = oldCoord[1];
+        var list = [];
+        
+        if (this.validateMove(oldCoord, [x+1, y+2])) { list.push([x+1, y+2]); }
+        if (this.validateMove(oldCoord, [x+1, y-2])) { list.push([x+1, y-2]); }
+        if (this.validateMove(oldCoord, [x+2, y+1])) { list.push([x+2, y+1]); }
+        if (this.validateMove(oldCoord, [x+2, y-1])) { list.push([x+2, y-1]); }
+        if (this.validateMove(oldCoord, [x-1, y+2])) { list.push([x-1, y+2]); }
+        if (this.validateMove(oldCoord, [x-1, y-2])) { list.push([x-1, y-2]); }
+        if (this.validateMove(oldCoord, [x-2, y+1])) { list.push([x-2, y+1]); }
+        if (this.validateMove(oldCoord, [x-2, y-1])) { list.push([x-2, y-1]); }
+        
+        return list;
+    };
 }
 
 function Bishop( color ) {
@@ -168,6 +204,8 @@ function Bishop( color ) {
     this.color = color;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
+        if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
+        if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if (deltaX != deltaY) { return false; }
@@ -191,7 +229,20 @@ function Bishop( color ) {
             if (piece.color == this.color) { return false; }
         }
         return true; 
-    }
+    };
+    this.getPossibleMoves = function( oldCoord ) {
+        var x = oldCoord[0];
+        var y = oldCoord[1];
+        var list = [];
+        
+        for(var i = 0; i < 8; i++ ) {
+            if (this.validateMove(oldCoord, [x+i, y+i])) { list.push([x+i, y+i]); }
+            if (this.validateMove(oldCoord, [x-i, y-i])) { list.push([x-i, y-i]); }
+            if (this.validateMove(oldCoord, [x+i, y-i])) { list.push([x+i, y-i]); }
+            if (this.validateMove(oldCoord, [x-i, y+i])) { list.push([x-i, y+i]); }
+        }
+        return list;
+    };
 }
 
 function King( color ) {
@@ -201,6 +252,8 @@ function King( color ) {
     this.hasMovedYet = false;
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
     this.validateMove = function( oldCoord, newCoord ) {
+        if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
+        if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( !this.hasMovedYet && deltaX == 2 && deltaY == 0 ) {
@@ -219,6 +272,22 @@ function King( color ) {
         this.hasMovedYet = true;
         return true;
     };
+    this.getPossibleMoves = function( oldCoord ) {
+        var x = oldCoord[0];
+        var y = oldCoord[1];
+        var list = [];
+        var oldMovedYet = this.hasMovedYet;
+        
+        var xAr = [0, 0, 1, -1, -1, 1, -1, 1, 2, -2];
+        var yAr = [1, -1, 0, 0, -1, 1, 1, -1, 0, 0];
+        
+        for (var i = 0; i < xAr.length; i++) {
+            if (this.validateMove(oldCoord, [x+xAr[i], y+yAr[i]])) { list.push([x+xAr[i], y+yAr[i]]); }
+            this.hasMovedYet = oldMovedYet;
+        }
+        
+        return list;
+    };
 }
 
 function Queen( color ) {
@@ -231,7 +300,14 @@ function Queen( color ) {
     this.validateMove = function( oldCoord, newCoord ) {
         return this.rook.validateMove( oldCoord, newCoord ) || 
                this.bishop.validateMove( oldCoord, newCoord );
-    }
+    };
+    this.getPossibleMoves = function( oldCoord ) {
+        var rookList = this.rook.getPossibleMoves( oldCoord );
+        var bishopList = this.bishop.getPossibleMoves( oldCoord );
+        console.log( bishopList );
+        console.log( rookList );
+        return bishopList.concat(rookList);
+    };
 }
 
 function Board() {
