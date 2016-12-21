@@ -89,7 +89,6 @@ function Pawn( color ) {
         }
         if (deltaX != 1) { return false; }
         if (piece == null) { 
-            console.log( "enPassant", newCoord, ChessBoard.enPassantCoord );
             if (ChessBoard.enPassantPiece == null) { return false; }
             else if (newCoord[0] == ChessBoard.enPassantCoord[0]
                      && newCoord[1] == ChessBoard.enPassantCoord[1]) {
@@ -271,7 +270,6 @@ function King( color ) {
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( !this.hasMovedYet && deltaX == 2 && deltaY == 0 ) {
-            console.log( "castling" );
             return ChessBoard.castle( this.color, newCoord );
         }
         if (deltaX > 1 || deltaY > 1) {
@@ -320,8 +318,6 @@ function Queen( color ) {
     this.getPossibleMoves = function( oldCoord ) {
         var rookList = this.rook.getPossibleMoves( oldCoord );
         var bishopList = this.bishop.getPossibleMoves( oldCoord );
-        console.log( bishopList );
-        console.log( rookList );
         return bishopList.concat(rookList);
     };
 }
@@ -381,15 +377,13 @@ function Board() {
     this.movePiece = function( fromTilename, toTilename ) {
         var clearEnPassant = false;
         if (this.enPassantPiece != null) { clearEnPassant = true; }
-        console.log( fromTilename, toTilename );
+        console.log( "attempting to move", fromTilename, "to", toTilename );
         var fromCoord = getTileCoord( fromTilename );
         var fromPiece = this.getObjectAtCoord( fromCoord );
         if (fromPiece == null) { return false; }
         if (fromPiece.color != this.player) { return false; }
         var toCoord = getTileCoord( toTilename );
         var toPiece = this.getObjectAtCoord( toCoord );
-        console.log( fromCoord, toCoord );
-        console.log( fromPiece, toPiece );
         if ( fromPiece.validateMove( fromCoord, toCoord ) ) {
             writeMessage( "" );
             var toCoordOldValue = this.board[toCoord[1]][toCoord[0]];
@@ -403,12 +397,16 @@ function Board() {
                 }
                 return false;
             }
-            if (this.lastMove != null) {
-                var thisMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
-                writeMove( this.lastMove, thisMove );
-                this.lastMove = null;
+            if (this.drawing) {
+                if (this.lastMove != null) {
+                    var thisMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
+                    writeMove( this.lastMove, thisMove );
+                    this.lastMove = null;
+                } else {
+                    this.lastMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
+                }
             } else {
-                this.lastMove = fromPiece.sName + toTilename + this.checkPromotion( fromPiece, toCoord );
+                this.checkPromotion( fromPiece, toCoord );
             }
             if( clearEnPassant ) {
                 this.enPassantCoord = null;
@@ -515,7 +513,6 @@ function Board() {
                 }
             }
         }
-        console.log( list );
         return list;
     };
     
