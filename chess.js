@@ -1,5 +1,32 @@
-// helloworld
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ * MIT License
+ *
+ * Copyright (c) 2017 Bennett Hreherchuk
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ */
 
+/* 
+ * Aids in keeping a standard variable set for pieces and for getting the
+ * HTML for the piece's image.
+ */ 
 var Images = {
     black: "black",
     white: "white",
@@ -14,85 +41,101 @@ var Images = {
     },
 }
 
+/* Functions that return the magnitude of distance for their respective axis
+ * for a given coordinate.
+ */
 var getDeltaX = function( oldCoord, newCoord ) {
     return Math.abs( oldCoord[0] - newCoord[0] );
 }
-
 var getDeltaY = function( oldCoord, newCoord ) {
     return Math.abs( oldCoord[1] - newCoord[1] )
 }
 
-var clonePiece = function( piece ) {
+/*
+ * Simple factory for cloning a piece and associating it with the specified board.
+ */
+var clonePiece = function( piece, board ) {
     if (piece == null) {
         return null;
     } else if (piece.sName == "") {
-        var newPiece = new Pawn( piece.color );
+        var newPiece = new Pawn( piece.color, board );
     } else if (piece.sName == "R") {
-        var newPiece = new Rook( piece.color );
+        var newPiece = new Rook( piece.color, board );
     } else if (piece.sName == "K") {
-        var newPiece = new King( piece.color );
+        var newPiece = new King( piece.color, board );
     } else if (piece.sName == "Q") {
-        var newPiece = new Queen( piece.color ); 
+        var newPiece = new Queen( piece.color, board ); 
     } else if (piece.sName == "N") {
-        var newPiece = new Knight( piece.color );
+        var newPiece = new Knight( piece.color, board );
     } else if (piece.sName == "B") {
-        var newPiece = new Bishop( piece.color );
+        var newPiece = new Bishop( piece.color, board );
     }
      newPiece.hasMovedYet = piece.hasMovedYet;
      return newPiece;
 }
 
-function Pawn( color ) {
+function Pawn( color, boardPlacedOn ) {
     this.name = Images.pawn;
-    this.value = 1;
-    this.sName = "";
-    this.color = color;
-    this.hasMovedYet = false;
+    this.value = 1;             // Value of the piece, for heuristics 
+    this.sName = "";            // Shorthand name for chess notation
+    this.color = color; 
+    this.board = boardPlacedOn;
+    this.hasMovedYet = false;   // For determining if it can move 2 tiles
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
-    this.validateMove =function( oldCoord, newCoord ) {
+    
+    this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
+        
         // white and black pawns can only move in a certain direction
-        if (oldCoord[1] < newCoord[1] && this.color == Images.white) { 
-            return false;
-        } else if (oldCoord[1] > newCoord[1] && this.color == Images.black) {
-            return false;
-        }
+        if (oldCoord[1] < newCoord[1] && this.color == Images.white) { return false; } 
+        else if (oldCoord[1] > newCoord[1] && this.color == Images.black) { return false; }
+        
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
+        
         // can only move two spaces on initial move.
         if (deltaY == 2) {
             if (this.hasMovedYet) { return false; }
             else if (deltaX != 0) { return false; }
-            else if (ChessBoard.getObjectAtCoord(newCoord) != null) { return false; }
-            if (this.color == ChessBoard.white) {
+            else if (this.board.getObjectAtCoord(newCoord) != null) { return false; }
+            
+            // Check that the pawn is not jumping over a piece
+            if (this.color == this.board.white) {
                 var checkBetween = [newCoord[0], newCoord[1]+1];
-                if (ChessBoard.getObjectAtCoord( checkBetween ) != null) { return false; }
+                if (this.board.getObjectAtCoord( checkBetween ) != null) { return false; }
             } else {
                 var checkBetween = [newCoord[0], newCoord[1]-1];
-                if (ChessBoard.getObjectAtCoord( checkBetween ) != null) { return false; }
+                if (this.board.getObjectAtCoord( checkBetween ) != null) { return false; }
             }
+            
+            // update en passant checks on the board 
+            // TODO: Make this rely soley on coordinates (?)
             if (this.color == Images.white) {
-                ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]+1];
+                this.board.enPassantCoord = [newCoord[0], newCoord[1]+1];
             } else {
-                ChessBoard.enPassantCoord = [newCoord[0], newCoord[1]-1];
+                this.board.enPassantCoord = [newCoord[0], newCoord[1]-1];
             }
-            ChessBoard.enPassantPiece = this;
+            this.board.enPassantPiece = this;
             return true;
         }
+        
         // can only move one space forward thereafter. 
         if (deltaY != 1) { return false; }
-        var piece = ChessBoard.getObjectAtCoord(newCoord);
+        
+        var piece = this.board.getObjectAtCoord(newCoord);
         if (deltaX == 0) {
             if (piece != null) { return false; }
             return true;
         }
         if (deltaX != 1) { return false; }
         if (piece == null) { 
-            if (ChessBoard.enPassantPiece == null) { return false; }
-            else if (newCoord[0] == ChessBoard.enPassantCoord[0]
-                     && newCoord[1] == ChessBoard.enPassantCoord[1]) {
-                ChessBoard.enPassantRemove();
+            // check if the en passant rule is being exercised
+            if (this.board.enPassantPiece == null) { return false; }
+            else if (newCoord[0] == this.board.enPassantCoord[0]
+                     && newCoord[1] == this.board.enPassantCoord[1]) {
+                this.board.enPassantRemove();
                 return true;
             }
             return false;
@@ -100,6 +143,7 @@ function Pawn( color ) {
         if (piece.color == this.color) { return false; }
         return true;
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
@@ -112,18 +156,23 @@ function Pawn( color ) {
     };
 }
 
-function Rook( color ) {
+function Rook( color, boardPlacedOn ) {
     this.name = Images.rook;
     this.value = 5;
     this.sName = "R";
     this.color = color;
+    this.board = boardPlacedOn;
     this.hasMovedYet = false;
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
+        
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
+        
         if ( deltaX != 0 && deltaY != 0 ) { return false; }
         if ( deltaX == 0 ) {
             var d = deltaY;
@@ -146,15 +195,14 @@ function Rook( color ) {
         for (var i = 1; i < d; i++ ) {
             var currentCoord = [oldCoord[0] + (i * movementX), 
                                 oldCoord[1] + (i * movementY)];
-            if (ChessBoard.getObjectAtCoord( currentCoord ) != null) { return false; }
+            if (this.board.getObjectAtCoord( currentCoord ) != null) { return false; }
         }
-        var piece = ChessBoard.getObjectAtCoord( newCoord );
-        if (piece == null) { 
-            return true; 
-        }
+        var piece = this.board.getObjectAtCoord( newCoord );
+        if (piece == null) { return true; }
         if (piece.color == this.color) { return false; }
         return true;
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
@@ -168,20 +216,24 @@ function Rook( color ) {
     };
 }
 
-function Knight( color ) {
+function Knight( color, boardPlacedOn ) {
     this.name = Images.knight;
     this.value = 3;
     this.sName = "N";
     this.color = color;
+    this.board = boardPlacedOn;
     this.hasMovedYet = false;
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
+        
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( (deltaX == 1 && deltaY == 2) || (deltaX == 2 && deltaY == 1) ) {
-            var piece = ChessBoard.getObjectAtCoord(newCoord);
+            var piece = this.board.getObjectAtCoord(newCoord);
             if (piece != null) {
                 if (piece.color != this.color) { return true; }
             } else {
@@ -190,6 +242,7 @@ function Knight( color ) {
         }
         return false;
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
@@ -208,40 +261,44 @@ function Knight( color ) {
     };
 }
 
-function Bishop( color ) {
+function Bishop( color, boardPlacedOn ) {
     this.name = Images.bishop;
     this.value = 3;
     this.sName = "B";
     this.color = color;
+    this.board = boardPlacedOn;
     this.hasMovedYet = false;
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
+        
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if (deltaX != deltaY) { return false; }
-        if ( oldCoord[0] < newCoord[0] ) {
-            var movementX = 1;
-        } else {
-            var movementX = -1;
-        }
-        if ( oldCoord[1] < newCoord[1] ) {
-            var movementY = 1;
-        } else {
-            var movementY = -1;
-        }
+        
+        // Determine the 'movement' of the piece
+        if ( oldCoord[0] < newCoord[0] ) { var movementX = 1; } 
+        else { var movementX = -1; }
+        if ( oldCoord[1] < newCoord[1] ) { var movementY = 1; } 
+        else { var movementY = -1; }
+        
+        // Check that we are not 'jumping' over pieces
         for (var i = 1; i < deltaX; i++ ) {
             var currentCoord = [oldCoord[0] + (i * movementX), 
                                 oldCoord[1] + (i * movementY)];
-            if (ChessBoard.getObjectAtCoord( currentCoord ) != null) { return false; }
+            if (this.board.getObjectAtCoord( currentCoord ) != null) { return false; }
         }
-        var piece = ChessBoard.getObjectAtCoord(newCoord);
+        
+        var piece = this.board.getObjectAtCoord(newCoord);
         if( piece != null ) {
             if (piece.color == this.color) { return false; }
         }
         return true; 
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
@@ -252,36 +309,40 @@ function Bishop( color ) {
             if (this.validateMove(oldCoord, [x-i, y-i])) { list.push([x-i, y-i]); }
             if (this.validateMove(oldCoord, [x+i, y-i])) { list.push([x+i, y-i]); }
             if (this.validateMove(oldCoord, [x-i, y+i])) { list.push([x-i, y+i]); }
+            // loop invariant (?) if all 4 return false, we will not add any more moves.
         }
         return list;
     };
 }
 
-function King( color ) {
+function King( color, boardPlacedOn ) {
     this.name = Images.king;
     this.value = 200;
     this.sName = "K";
     this.color = color;
+    this.board = boardPlacedOn;
     this.hasMovedYet = false;
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    
     this.validateMove = function( oldCoord, newCoord ) {
         if (newCoord[0] < 0 || newCoord[0] > 7) { return false; }
         if (newCoord[1] < 0 || newCoord[1] > 7) { return false; }
+        
         var deltaX = getDeltaX( oldCoord, newCoord );
         var deltaY = getDeltaY( oldCoord, newCoord );
         if ( !this.hasMovedYet && deltaX == 2 && deltaY == 0 ) {
             return ChessBoard.castle( this.color, newCoord );
         }
-        if (deltaX > 1 || deltaY > 1) {
-            return false;
-        }
+        
+        if (deltaX > 1 || deltaY > 1) { return false; }
+        
         var piece = ChessBoard.getObjectAtCoord( newCoord );
-        if (piece == null) {
-            return true; 
-        }
+        if (piece == null) { return true; }
         if (piece.color == this.color) { return false; }
         return true;
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
@@ -298,23 +359,27 @@ function King( color ) {
     };
 }
 
-function Queen( color ) {
+function Queen( color, boardPlacedOn ) {
     this.name = Images.queen;
     this.value = 9;
     this.sName = "Q";
     this.color = color;
+    this.board = boardPlacedOn;
     this.hasMovedYet = false;
-    this.rook = new Rook( color );
-    this.bishop = new Bishop( color );
+    this.rook = new Rook( color, boardPlacedOn );
+    this.bishop = new Bishop( color, boardPlacedOn );
+    
     this.getImgHTML = function() { return Images.getImgHTML( this.color, this.name ); };
+    
     this.validateMove = function( oldCoord, newCoord ) {
-    if ( this.hasMovedYet && !(this.rook.hasMovedYet || this.bishop.hasMovedYet) ) {
+        if ( this.hasMovedYet && !(this.rook.hasMovedYet || this.bishop.hasMovedYet) ) {
             this.rook.hasMovedYet = true;
             this.bishop.hasMovedYet = true;
         }
         return this.rook.validateMove( oldCoord, newCoord ) || 
                this.bishop.validateMove( oldCoord, newCoord );
     };
+    
     this.getPossibleMoves = function( oldCoord ) {
         var rookList = this.rook.getPossibleMoves( oldCoord );
         var bishopList = this.bishop.getPossibleMoves( oldCoord );
@@ -333,30 +398,30 @@ function Board() {
     this.enPassantCoord = null;
     this.initBoard = function() {
         this.board = [];
-        this.board.push([new Rook( Images.black ),   new Knight( Images.black ), 
-                         new Bishop( Images.black ), new King( Images.black ), 
-                         new Queen( Images.black ),  new Bishop( Images.black ), 
-                         new Knight( Images.black ), new Rook( Images.black ) ]);
+        this.board.push([new Rook( Images.black, this ),   new Knight( Images.black, this ), 
+                         new Bishop( Images.black, this ), new King( Images.black, this ), 
+                         new Queen( Images.black, this ),  new Bishop( Images.black, this ), 
+                         new Knight( Images.black, this ), new Rook( Images.black, this ) ]);
                          
-        this.board.push([new Pawn( Images.black ), new Pawn( Images.black ), 
-                         new Pawn( Images.black ), new Pawn( Images.black ), 
-                         new Pawn( Images.black ), new Pawn( Images.black ), 
-                         new Pawn( Images.black ), new Pawn( Images.black ) ]);
+        this.board.push([new Pawn( Images.black, this ), new Pawn( Images.black, this ), 
+                         new Pawn( Images.black, this ), new Pawn( Images.black, this ), 
+                         new Pawn( Images.black, this ), new Pawn( Images.black, this ), 
+                         new Pawn( Images.black, this ), new Pawn( Images.black, this ) ]);
                          
         this.board.push([ null, null, null, null, null, null, null, null ]);
         this.board.push([ null, null, null, null, null, null, null, null ]);
         this.board.push([ null, null, null, null, null, null, null, null ]);
         this.board.push([ null, null, null, null, null, null, null, null ]);
         
-        this.board.push([new Pawn( Images.white ), new Pawn( Images.white ), 
-                         new Pawn( Images.white ), new Pawn( Images.white ), 
-                         new Pawn( Images.white ), new Pawn( Images.white ), 
-                         new Pawn( Images.white ), new Pawn( Images.white ) ]);
+        this.board.push([new Pawn( Images.white, this ), new Pawn( Images.white, this ), 
+                         new Pawn( Images.white, this ), new Pawn( Images.white, this ), 
+                         new Pawn( Images.white, this ), new Pawn( Images.white, this ), 
+                         new Pawn( Images.white, this ), new Pawn( Images.white, this ) ]);
                          
-        this.board.push([new Rook( Images.white ), new Knight( Images.white ), 
-                         new Bishop( Images.white ), new King( Images.white ), 
-                         new Queen( Images.white ), new Bishop( Images.white ), 
-                         new Knight( Images.white ), new Rook( Images.white )  ]);
+        this.board.push([new Rook( Images.white, this ), new Knight( Images.white, this ), 
+                         new Bishop( Images.white, this ), new King( Images.white, this ), 
+                         new Queen( Images.white, this ), new Bishop( Images.white, this ), 
+                         new Knight( Images.white, this ), new Rook( Images.white, this )  ]);
     };
     
     this.drawBoard = function() {
@@ -385,6 +450,7 @@ function Board() {
         var toCoord = getTileCoord( toTilename );
         var toPiece = this.getObjectAtCoord( toCoord );
         if ( fromPiece.validateMove( fromCoord, toCoord ) ) {
+            // TODO: Does not account for castling 
             writeMessage( "" );
             var toCoordOldValue = this.board[toCoord[1]][toCoord[0]];
             this.board[toCoord[1]][toCoord[0]] = this.board[fromCoord[1]][fromCoord[0]];
@@ -570,8 +636,8 @@ function Board() {
     };
 }
 
-var ChessBoard = new Board();
-ChessBoard.drawing = true;
+var global_chessboard = new Board();
+global_chessboard.drawing = true;
 
 var ChessBoardSelector = {
     lastTileSelected: null,
@@ -617,16 +683,16 @@ var clickedTile = function( tilename ) {
         return;
     }
     if (lastTile != null) {
-        ChessBoard.movePiece( lastTileName, tilename );
+        global_chessboard.movePiece( lastTileName, tilename );
         lastTile.style = ChessBoardSelector.lastTileSelected_style;
         ChessBoardSelector.lastTileSelected = null;
         ChessBoardSelector.lastTileSelected_style = null;
         return;
     }
     var coords = getTileCoord( tilename );
-    var piece = ChessBoard.getObjectAtCoord( coords );
+    var piece = global_chessboard.getObjectAtCoord( coords );
     if (piece == null) { return; }
-    if (ChessBoard.player != piece.color) { return; }
+    if (global_chessboard.player != piece.color) { return; }
     var tile = getTileElement( tilename );
     ChessBoardSelector.lastTileSelected = tilename;
     ChessBoardSelector.lastTileSelected_style = tile.style;
@@ -635,8 +701,8 @@ var clickedTile = function( tilename ) {
 }
 
 var initBoard = function() {
-    ChessBoard.initBoard();
-    ChessBoard.drawBoard();
+    global_chessboard.initBoard();
+    global_chessboard.drawBoard();
     for ( var i = 0; i < 8; i++ ) {
         for ( var j = 0; j < 8; j++ ) {
             var tilename = getTileName([i,j]);
