@@ -148,10 +148,18 @@ function Pawn( color, boardPlacedOn ) {
         var x = oldCoord[0];
         var y = oldCoord[1];
         var list = [];
-        if (this.validateMove(oldCoord, [x, y+1])) { list.push([x, y+1]); }
-        if (this.validateMove(oldCoord, [x, y+2])) { list.push([x, y+2]); }
-        if (this.validateMove(oldCoord, [x+1, y+1])) { list.push([x+1, y+1]); }
-        if (this.validateMove(oldCoord, [x-1, y+1])) { list.push([x-1, y+1]); }
+        
+        var one_forward = 1;
+        var two_forward = 2;
+        if (this.color == this.board.white) {
+            one_forward = -1;
+            two_forward = -2;
+        }
+        
+        if (this.validateMove(oldCoord, [x, y+one_forward])) { list.push([x, y+one_forward]); }
+        if (this.validateMove(oldCoord, [x, y+two_forward])) { list.push([x, y+two_forward]); }
+        if (this.validateMove(oldCoord, [x+1, y+one_forward])) { list.push([x+1, y+one_forward]); }
+        if (this.validateMove(oldCoord, [x-1, y+one_forward])) { list.push([x-1, y+one_forward]); }
         return list;
     };
 }
@@ -448,7 +456,7 @@ function Board() {
     this.movePiece = function( fromTilename, toTilename ) {
         var clearEnPassant = false;
         if (this.enPassantPiece != null) { clearEnPassant = true; }
-        console.log( "attempting to move", fromTilename, "to", toTilename );
+        if (this.drawing) { console.log( "attempting to move", fromTilename, "to", toTilename ); }
         var fromCoord = getTileCoord( fromTilename );
         var fromPiece = this.getObjectAtCoord( fromCoord );
         if (fromPiece == null) { return false; }
@@ -532,7 +540,7 @@ function Board() {
         if (this.player == this.white) {
             this.player = this.black;
             elem.innerHTML = "Black's move.";
-            decide(this);
+            if (this.drawing) { decide(this); }
         } else {
             this.player = this.white;
             if (this.drawing) { elem.innerHTML = "White's move."; }

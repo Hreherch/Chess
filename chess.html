@@ -14,7 +14,6 @@
             
             .chessboard { float: left; }
             .container { width: 100px; height: 512px; float: left; border: solid; margin-left: 5px; bottom:25px; overflow-y:scroll; }
-            
         </style>
     </head>
     <body>
@@ -105,7 +104,31 @@
         <div id="move-container" class="container">
             <h3>Moves:</h3>
         </div>
-        <div id="message-box" style="width:300px;height:300px; clear:both; float:left"></div>
+        <div style="width:300px; height:300px; clear:both; float:left">
+            <div id="message-box" height="25%">o</div>
+            <form name="ai_option_form">
+                <input type="radio" name="ai_option" value="2-player" 
+                       onclick="updateAIoption()" 
+                       title="This option is for playing with someone else, or by yourself!"
+                       style="float: left;">2-player<br/>
+                <input type="radio" name="ai_option" value="random" 
+                       onclick="updateAIoption()" checked="true" 
+                       title="The computer will make random (legal) moves."
+                       style="float: left;">random<br/>
+                <input type="radio" name="ai_option" value="greedy" 
+                       onclick="updateAIoption()" 
+                       title="Like random, but it will be agressive in attacking your pieces."
+                       style="float: left;">greedy<br/>
+                <input type="radio" name="ai_option" value="minimax" 
+                       onclick="updateAIoption()" 
+                       title="A 1-ply look ahead (because it's expensive to do)"
+                       style="float: left;">minimax<br/>
+                <input type="radio" name="ai_option" value="alphabeta" 
+                       onclick="updateAIoption()" 
+                       title=""
+                       style="float: left;">alphabeta<br/>
+            </form>
+        </div>
         <script src="chess.js"></script>
         <script src="chessAI.js"></script>
     </body>
