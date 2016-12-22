@@ -24,7 +24,6 @@
  */
 
 var decide = function( boardState ) {
-    return;
     action = max( boardState.clone(), 0 );
     if (action == "checkmate") {
         writeMessage( "Checkmate. Good job." );

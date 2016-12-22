@@ -501,12 +501,12 @@ function Board() {
         if (fromPiece instanceof Pawn) {
             if (fromPiece.color == this.white) {
                 if (toCoord[1] == 0) {
-                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.white );
+                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.white, this );
                     return "Q";
                 }
             } else {
                 if (toCoord[1] == 7) {
-                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.black );
+                    this.board[toCoord[1]][toCoord[0]] = new Queen( this.black, this );
                     return "Q";
                 }
             }
@@ -635,7 +635,7 @@ function Board() {
         clone.initBoard();
         for ( var i = 0; i < 8; i++ ) {
             for ( var j = 0; j < 8; j++ ) {
-                clone.board[i][j] = clonePiece(this.board[i][j]);
+                clone.board[i][j] = clonePiece(this.board[i][j], clone);
             }
         }
         // TODO issues with En Passant?
