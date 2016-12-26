@@ -68,8 +68,7 @@ var decide = function( boardState ) {
     } else if (AIoption == "minimax") {
         max( boardState.clone(), 2 );
     } else if (AIoption == "alphabeta") {
-        alert( "alphabeta NYI" );
-        return;
+        ab_max( boardState.clone(), 2, 100000 );
     }
     
     if (action == "checkmate") {
@@ -177,4 +176,90 @@ var max = function( board, depth ) {
     var i = Math.floor( Math.random() * bestAction.length );
     action = bestAction[i][0];
     return bestAction[i][1];
+}
+
+/*
+ * Finds the beta value from it's children.
+ */
+var ab_min = function( board, depth, alpha ) {
+    if (depth == -1) { return board.getValue(); }
+    //console.log( "called ab_min with depth " + depth );
+    var actions = getActions( board, board.white );
+    
+    var beta = 100000;
+    
+    if (actions.length == 0) { 
+        return beta;
+    }
+    
+    var clonedBoard = board.clone();
+    for (var i = 0; i < actions.length; i++ ) {
+        // check if move is returned as legal. 
+        if (!clonedBoard.movePiece( actions[i][0], actions[i][1] )) { continue; }
+        
+        var d = depth - 1;
+        var value = ab_max( clonedBoard, d, beta );
+        
+        if (value <= alpha) { return alpha; }
+        if (value < beta) { beta = value; }
+        var clonedBoard = board.clone();
+    }
+    return beta;
+}
+
+/*
+ * Finds the alpha value from it's children.
+ */
+var toplevel = true;
+var ab_max = function( board, depth, beta ) {
+    if (depth == -1) { return board.getValue(); }
+    //console.log( "called ab_max with depth " + depth );
+    var actions = getActions( board, board.black );
+    
+    var alpha = -100000;
+    
+    if (actions.length == 0) { 
+        if (toplevel) { action = "checkmate"; } 
+        return alpha;
+    }
+    
+    var bestActions = [];
+    var clonedBoard = board.clone();
+    for (var i = 0; i < actions.length; i++ ) {
+        // check if move is returned as legal. 
+        if (!clonedBoard.movePiece( actions[i][0], actions[i][1] )) { continue; }
+        
+        // toplevel: determining the CPU's best action.
+        if (toplevel) {
+            toplevel = false;
+            var d = depth - 1;
+            var value = ab_min( clonedBoard, d, alpha );
+            toplevel = true;
+        } else {
+            var d = depth - 1;
+            var value = ab_min( clonedBoard, d, alpha );
+        }
+
+        if (value >= beta) { return beta; }
+        
+        if (value > alpha) {
+            alpha = value;
+            if (toplevel) {
+                bestActions = [ actions[i] ];
+            }
+        } else if ((value == alpha) && toplevel) {
+            bestActions.push( actions[i] );
+        }
+        
+        var clonedBoard = board.clone();
+    }
+    if (toplevel) {
+       if (bestActions.length == 0) { 
+        action = "checkmate"; 
+        return;
+        }
+        var i = Math.floor( Math.random() * bestActions.length );
+        action = bestActions[i];
+    }
+    return alpha;
 }
