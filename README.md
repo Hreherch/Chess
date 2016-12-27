@@ -33,3 +33,7 @@ The board heuristic uses a simple weighted sum: (value of all black pieces) - (v
 # License
 
 This project is licenced under the MIT License - see [LICENSE](LICENSE).
+
+# Acknowledgements
+
+The chess icons used for this program were made by [Freepik](http://www.flaticon.com/authors/freepik) at www.flaticon.com licensed under [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/).
