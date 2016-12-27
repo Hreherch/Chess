@@ -56,9 +56,7 @@ var getActions = function( board, color ) {
 }
 
 var action = [];
-
 var decide = function( boardState ) {
-    // gets [ actionset, value ];
     if (AIoption == "2-player") {
         return;
     } else if (AIoption == "random") {
@@ -68,9 +66,8 @@ var decide = function( boardState ) {
     } else if (AIoption == "minimax") {
         max( boardState.clone(), 2 );
     } else if (AIoption == "alphabeta") {
-        ab_max( boardState.clone(), 2, 100000 );
+        ab_max( boardState.clone(), 3, 100000 );
     }
-    
     if (action == "checkmate") {
         writeMessage( "Checkmate. Good job." );
         return;
