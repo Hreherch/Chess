@@ -4,7 +4,7 @@ Chess for your browser, featuring different algorithms to play against and a two
 
 ### Testing
 
-These files have been tested on Firefox and Chrome browsers, with a a large focus on Chrome. The intention for this project was for personal use so extensive testing on a wide variety of browsers was not done. 
+These files have been tested on Firefox and Chrome browsers, with a large focus on Chrome. The intention for this project was for personal use so extensive testing on a wide variety of browsers was not done. 
 
 # Files 
 
